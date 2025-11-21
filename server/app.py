@@ -2,19 +2,19 @@ from flask import Flask, request, jsonify
 from PIL import Image, ImageDraw
 import io
 import base64
-
 import uuid
-from datetime import datetime
 from flask_cors import CORS
-import sqlite3
-from os import path
-
-import database
 from process_image import process_image
+from io import BytesIO
+import base64
+from docx import Document
+from docx.shared import Inches
+from docx.enum.text import WD_ALIGN_PARAGRAPH
+import tempfile
+import os
 
 app = Flask(__name__)
 CORS(app)
-
 
 @app.route('/upload', methods=['POST'])
 def upload_image():
@@ -28,17 +28,9 @@ def upload_image():
         return jsonify({'error': 'No selected file'}), 400
 
     try:
-        # Читаем и обрабатываем изображение
+        # Читаем и обрабатываем изображение через YOLO
         image = Image.open(file.stream).convert("RGB")
         processed_image, number, text = process_image(image)
-
-        # Сохраняем в БД
-        drawing_id = database.save_drawing_to_db(
-            session_id=session_id,
-            filename=file.filename,
-            processed_image=processed_image,
-            check_result=text
-        )
 
         # Конвертируем для ответа
         buffered = io.BytesIO()
@@ -49,59 +41,125 @@ def upload_image():
             'success': True,
             'image_base64': img_str,
             'text': text,
-            'drawing_id': drawing_id,
-            'session_id': session_id,
-            'number': number
+            'number': number,
+            'session_id': session_id
+            # drawing_id больше не нужен - он будет в локальной БД
         })
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
 
-@app.route('/history/<session_id>', methods=['GET'])
-def get_history(session_id):
+#ендпоинт для загрузки отчета
+@app.route('/generate_report', methods=['POST'])
+def generate_report():
     try:
-        drawings = database.get_history(session_id)
+        data = request.get_json()
 
-        # Конвертируем в словари
-        result = []
-        for row in drawings:
-            result.append({
-                'id': row[0],
-                'filename': row[1],
-                'status': row[2],
-                'check_result': row[3],
-                'created_at': row[4]
-            })
+        drawing_id = data.get('drawing_id')
+        filename = data.get('filename')
+        check_result = data.get('check_result')
+        image_base64 = data.get('image_base64')
+        created_at = data.get('created_at')
 
-        return jsonify({'drawings': result})
+        if not all([drawing_id, filename, check_result, image_base64]):
+            return jsonify({'error': 'Missing required data'}), 400
+
+        # Генерируем Word отчет
+        doc_buffer = generate_word_report(
+            drawing_id=drawing_id,
+            filename=filename,
+            check_result=check_result,
+            image_base64=image_base64,
+            created_at=created_at
+        )
+
+        # Кодируем Word в base64 для отправки
+        doc_base64 = base64.b64encode(doc_buffer.getvalue()).decode('utf-8')
+
+        return jsonify({
+            'success': True,
+            'doc_base64': doc_base64,
+            'filename': f'report_{drawing_id}.docx'
+        })
+
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
 
-@app.route('/drawing/<int:drawing_id>', methods=['GET'])
-def get_drawing(drawing_id):
-    try:
-        row = database.get_drawing(drawing_id)
-        if row:
-            # Конвертируем bytes в base64
-            img_str = base64.b64encode(row[0]).decode('utf-8') if row[0] else None
-            return jsonify({
-                'image_base64': img_str,
-                'filename': row[1],
-                'check_result': row[2],
-                'status': row[3]
-            })
-        else:
-            return jsonify({'error': 'Drawing not found'}), 404
+def generate_word_report(drawing_id, filename, check_result, image_base64, created_at):
+    # Создаем новый документ Word
+    doc = Document()
 
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+    # Заголовок отчета (кириллица работает идеально!)
+    title = doc.add_heading('Отчет по проверке чертежа', 0)
+    title.alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+    # Добавляем информацию о чертеже
+    doc.add_heading('Информация о чертеже', level=1)
+
+    # Создаем таблицу для информации
+    info_table = doc.add_table(rows=4, cols=2)
+
+    # Заполняем таблицу
+    info_table.cell(0, 0).text = 'ID чертежа:'
+    info_table.cell(0, 1).text = str(drawing_id)
+
+    info_table.cell(1, 0).text = 'Название файла:'
+    info_table.cell(1, 1).text = filename
+
+    info_table.cell(2, 0).text = 'Дата проверки:'
+    info_table.cell(2, 1).text = created_at
+
+    info_table.cell(3, 0).text = 'Статус:'
+    info_table.cell(3, 1).text = 'Проверен'
+
+    # Добавляем раздел с результатами проверки
+    doc.add_heading('Результат проверки', level=1)
+
+    # Добавляем текст результата с сохранением переносов строк
+    result_paragraph = doc.add_paragraph()
+    lines = check_result.split('\n')
+
+    for i, line in enumerate(lines):
+        if i > 0:
+            result_paragraph.add_run().add_break()  # Добавляем перенос строки между абзацами
+        result_paragraph.add_run(line)
+
+    # Добавляем обработанное изображение если есть
+    if image_base64:
+        try:
+            doc.add_heading('Обработанное изображение', level=1)
+
+            # Декодируем base64 и сохраняем во временный файл
+            image_data = base64.b64decode(image_base64)
+
+            with tempfile.NamedTemporaryFile(delete=False, suffix='.png') as temp_file:
+                temp_file.write(image_data)
+                temp_file_path = temp_file.name
+
+            # Добавляем изображение в документ
+            doc.add_picture(temp_file_path, width=Inches(5.0))
+
+            # Удаляем временный файл
+            os.unlink(temp_file_path)
+
+            # Добавляем подпись к изображению
+            caption = doc.add_paragraph()
+            caption.alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+        except Exception as e:
+            # В случае ошибки добавляем сообщение
+            error_para = doc.add_paragraph()
+            error_para.add_run(f'Ошибка при добавлении изображения: {str(e)}')
+
+    # Сохраняем документ в buffer
+    buffer = BytesIO()
+    doc.save(buffer)
+    buffer.seek(0)
+
+    return buffer
 
 
 if __name__ == '__main__':
-    # Создаем БД если нет
-    if not path.exists('drawings.db'):
-        database.create_db()
-
     app.run(host='0.0.0.0', port=5000, debug=True)
