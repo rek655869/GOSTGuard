@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:GOSTGuard/features/checking_drawing/image_select_card.dart';
+import 'package:gostguard/features/checking_drawing/image_select_card.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -38,6 +38,7 @@ class _CheckingScreenState extends State<CheckingScreen> {
     });
 
     try {
+      // ВСЁ ТО ЖЕ САМОЕ, но теперь работает локально!
       final result = await _uploader.uploadImage(image: _image!);
 
       setState(() {
@@ -50,9 +51,9 @@ class _CheckingScreenState extends State<CheckingScreen> {
       setState(() {
         _isUploading = false;
       });
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Ошибка: $e')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Ошибка: $e')),
+      );
     }
   }
 
