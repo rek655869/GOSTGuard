@@ -1,2 +1,8 @@
-.idea/"__pycache__/" 
-"*.pyc" 
+<<<<<<< HEAD
+.idea/
+.venv/
+
+drawings.db
+=======
+.idea/
+>>>>>>> fe9091abcc61c1fa986d1b0d86dc29f1d09ef33c
