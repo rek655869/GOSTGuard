@@ -220,43 +220,44 @@ class _HistoryScreenState extends State<HistoryScreen> {
   Widget _buildDetailView() {
     return Column(
       children: [
-        // Кнопки навигации
-        Row(
-          children: [
-            PrimaryButton(
-              icon: Icons.arrow_back,
-              label: 'К истории',
-              radius: 12,
-              onPressed: _closeDrawingDetails,
-            ),
-            const SizedBox(width: 10),
-            PrimaryButton(
-              icon: Icons.help_outline,
-              label: 'Справка',
-              radius: 12,
-              onPressed: () {
-                showDialog(
-                  context: context,
-                  builder: (_) => Alert(
-                    title: 'Пояснение',
-                    message: 'Цифрами на чертеже отмечены проблемные '
-                        'места, ниже указаны конкретные ГОСТы, которым '
-                        'они не соответствуют.',
-                    onOk: () => Navigator.pop(context),
-                  ),
-                );
-              },
-            ),
-            const SizedBox(width: 10),
-            // Кнопка скачивания отчета
-            PrimaryButton(
-              icon: Icons.file_download,
-              label: 'Скачать отчет',
-              radius: 12,
-              onPressed: _downloadReport,
-            ),
-          ],
-        ),
+      Align(
+      alignment: Alignment.topLeft, // привязываем к левому верхнему углу
+      child:Wrap(
+        spacing: 5, // горизонтальный отступ между кнопками
+        runSpacing: 5,
+        children: [
+          PrimaryButton(
+            icon: Icons.arrow_back,
+            label: 'К истории',
+            radius: 12,
+            onPressed: _closeDrawingDetails,
+          ),
+          PrimaryButton(
+            icon: Icons.help_outline,
+            label: 'Справка',
+            radius: 12,
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (_) => Alert(
+                  title: 'Пояснение',
+                  message: 'Цифрами на чертеже отмечены проблемные '
+                      'места, ниже указаны конкретные ГОСТы, которым '
+                      'они не соответствуют.',
+                  onOk: () => Navigator.pop(context),
+                ),
+              );
+            },
+          ),
+          // Кнопка скачивания отчета
+          PrimaryButton(
+            icon: Icons.file_download,
+            label: 'Скачать отчет',
+            radius: 12,
+            onPressed: _downloadReport,
+          ),
+        ],
+      )),
         const SizedBox(height: 20),
         // Карточка с деталями
         Card(
