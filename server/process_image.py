@@ -29,6 +29,7 @@ def process_image(image: Image.Image):
     # Рисуем рамку
     draw.rectangle([x1, y1, x2, y2], outline="red", width=3)
 
+
     # Проверка размеров сторон рамки
     left_width_px = x1
     right_width_px = image.width - x2
