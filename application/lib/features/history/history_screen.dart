@@ -220,7 +220,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
   Widget _buildDetailView() {
     return Column(
       children: [
-        // Кнопки навигации
+        // Кнопки навигации (без кнопки скачивания)
         Row(
           children: [
             PrimaryButton(
@@ -247,17 +247,10 @@ class _HistoryScreenState extends State<HistoryScreen> {
                 );
               },
             ),
-            const SizedBox(width: 10),
-            // Кнопка скачивания отчета
-            PrimaryButton(
-              icon: Icons.file_download,
-              label: 'Скачать отчет',
-              radius: 12,
-              onPressed: _downloadReport,
-            ),
           ],
         ),
         const SizedBox(height: 20),
+
         // Карточка с деталями
         Card(
           elevation: 2,
@@ -296,6 +289,15 @@ class _HistoryScreenState extends State<HistoryScreen> {
               ],
             ),
           ),
+        ),
+
+        // Кнопка скачивания отчета ПЕРЕМЕЩЕНА ВНИЗ
+        const SizedBox(height: 20),
+        PrimaryButton(
+          icon: Icons.file_download,
+          label: 'Скачать отчет',
+          radius: 12,
+          onPressed: _downloadReport,
         ),
         const SizedBox(height: 30),
       ],
