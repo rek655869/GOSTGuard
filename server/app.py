@@ -216,7 +216,6 @@ def upload_image():
         return jsonify({'error': str(e)}), 500
 
 
-# Остальной код остается без изменений...
 @app.route('/generate_report', methods=['POST'])
 def generate_report():
     try:
