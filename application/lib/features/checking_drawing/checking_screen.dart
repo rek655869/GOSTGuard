@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:GOSTGuard/features/checking_drawing/image_select_card.dart';
+import 'package:gostguard/features/checking_drawing/image_select_card.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
