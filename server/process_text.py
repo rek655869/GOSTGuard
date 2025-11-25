@@ -24,10 +24,7 @@ def process_text(image: np.ndarray, model):
     if len(texts) == 0:
         return violations, warnings, statistics, "Ошибок нет", pil_image
 
-    # ИСПРАВЛЕННЫЙ КОЭФФИЦИЕНТ
     px_to_mm = 0.15
-
-    # Целевые размеры в мм
     TEXT_HEIGHT_TARGET_MM = 3.5
     TEXT_HEIGHT_TOLERANCE_MM = 0.5
 
@@ -35,9 +32,11 @@ def process_text(image: np.ndarray, model):
         text_height_px = text[3] - text[1]
         text_height_mm = text_height_px * px_to_mm
 
+        # ТОЛЬКО если нарушение - выделяем красным
         if not (TEXT_HEIGHT_TARGET_MM - TEXT_HEIGHT_TOLERANCE_MM <= text_height_mm <= TEXT_HEIGHT_TARGET_MM + TEXT_HEIGHT_TOLERANCE_MM):
             violation_text = f"Текст {i + 1} ({text_height_mm:.1f} мм) не соответствует {TEXT_HEIGHT_TARGET_MM} мм ±{TEXT_HEIGHT_TOLERANCE_MM}мм"
             violations.append(violation_text)
+            # ВЫДЕЛЯЕМ ТОЛЬКО НАРУШЕНИЯ
             draw.rectangle([text[0], text[1], text[2], text[3]], outline="red", width=3)
 
     result_text = "\n".join(violations) if violations else "Весь текст соответствует ГОСТ"
