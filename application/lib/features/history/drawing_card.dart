@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+//для того, чтобы брать цвет из файла
+import '../../app/theme/app_colors.dart';
 
 class DrawingCard extends StatelessWidget {
   final String fileName;
@@ -15,7 +17,9 @@ class DrawingCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
+      color: AppColors.primary,
       elevation: 1,
+
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
       ),
@@ -26,7 +30,7 @@ class DrawingCard extends StatelessWidget {
           padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
           child: Row(
             children: [
-              const Icon(Icons.insert_drive_file_outlined, size: 28),
+              const Icon(Icons.folder, size: 28, color: AppColors.primaryText),
               const SizedBox(width: 16),
 
               Expanded(
@@ -35,7 +39,9 @@ class DrawingCard extends StatelessWidget {
                   children: [
                     Text(
                       fileName,
-                      style: Theme.of(context).textTheme.titleMedium,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        color: AppColors.primaryText,
+                      ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -43,14 +49,14 @@ class DrawingCard extends StatelessWidget {
                     Text(
                       _formatDate(uploadDate),
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Colors.grey[600],
+                        color: AppColors.primaryText,
                       ),
                     ),
                   ],
                 ),
               ),
 
-              const Icon(Icons.chevron_right),
+              const Icon(Icons.chevron_right, color:AppColors.primaryText ),
             ],
           ),
         ),

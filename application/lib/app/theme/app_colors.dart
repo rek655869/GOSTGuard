@@ -9,4 +9,5 @@ class AppColors {
   static const appBarText = Color(0xFFFFFFFF);
   static const navBar = Color(0x5E00568C);
   static const text = Color(0xFF49454F);
+
 }
