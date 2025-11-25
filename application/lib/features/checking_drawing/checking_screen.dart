@@ -24,7 +24,6 @@ class _CheckingScreenState extends State<CheckingScreen> {
   File? _image;
   Uint8List? _responseImage;
   String? _responseText;
-  int? _responseNumber;
   bool _isUploading = false;
 
   final _uploader = UploadService();
@@ -44,7 +43,6 @@ class _CheckingScreenState extends State<CheckingScreen> {
 
       setState(() {
         _responseText = result.text;
-        _responseNumber = result.number;
         _responseImage = result.image;
         _isUploading = false;
       });
@@ -140,7 +138,6 @@ class _CheckingScreenState extends State<CheckingScreen> {
                             setState(() {
                               _responseImage = null;
                               _responseText = null;
-                              _responseNumber = null;
                             });
                           },
                         ),
@@ -173,7 +170,6 @@ class _CheckingScreenState extends State<CheckingScreen> {
 
                     ImageResultCard(
                       responseImage: _responseImage!,
-                      number: _responseNumber!,
                       text: _responseText!,
                     ),
                   ],
