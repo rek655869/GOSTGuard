@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-//для того, чтобы брать цвет из файла
 import '../../app/theme/app_colors.dart';
 
 class DrawingCard extends StatelessWidget {

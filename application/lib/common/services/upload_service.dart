@@ -1,7 +1,5 @@
-import 'dart:convert';
 import 'dart:typed_data';
 import 'dart:io';
-import 'package:http/http.dart' as http;
 import 'drawing_service.dart';
 
 class UploadResult {

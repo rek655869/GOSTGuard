@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:gostguard/features/checking_drawing/image_select_card.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -10,6 +9,8 @@ import '../../common/widgets/alert.dart';
 import '../../common/widgets/base_screen.dart';
 import '../../common/widgets/primary_button.dart';
 import 'image_result_card.dart';
+import 'image_select_card.dart';
+
 
 /// Экран загрузки изображения на сервер
 class CheckingScreen extends StatefulWidget {
