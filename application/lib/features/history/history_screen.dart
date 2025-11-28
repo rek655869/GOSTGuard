@@ -351,7 +351,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
           ),
         ),
 
-        // Кнопки скачивания и отправки (рядом)
+        // Кнопки скачивания и отправки (рядом) - ОБЪЕДИНЯЕМ ОБА ВАРИАНТА
         const SizedBox(height: 20),
         Row(
           children: [
