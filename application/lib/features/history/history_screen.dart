@@ -13,6 +13,9 @@ import 'drawing_card.dart';
 import 'empty_history_widget.dart';
 import '../../app/theme/app_colors.dart';
 
+import 'package:share_plus/share_plus.dart';
+
+
 class HistoryScreen extends StatefulWidget {
   const HistoryScreen({super.key});
 
@@ -182,6 +185,63 @@ class _HistoryScreenState extends State<HistoryScreen> {
       ),
     );
   }
+  // Простой способ - делиться через системный шеринг
+  Future<void> _shareReportViaMessenger() async {
+    if (_selectedDrawingData == null) return;
+
+    try {
+      // Показываем индикатор
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const AlertDialog(
+          content: Row(
+            children: [
+              CircularProgressIndicator(),
+              SizedBox(width: 20),
+              Text('Подготовка отчета...'),
+            ],
+          ),
+        ),
+      );
+
+      // Генерируем отчет
+      final reportResult = await DrawingService.generateReport(
+        drawingId: int.parse(_selectedDrawingData!['id']),
+        filename: _selectedDrawingData!['name'] ?? 'Чертеж',
+        checkResult: _selectedDrawingData!['check_result'] ?? '',
+        imageBase64: _selectedDrawingData!['image_base64'] ?? '',
+        createdAt: _selectedDrawingData!['date'] ?? DateTime.now().toIso8601String(),
+      );
+
+      final docBytes = base64.decode(reportResult['doc_base64']);
+      final fileName = reportResult['filename'] ?? 'report_${_selectedDrawingData!['id']}.docx';
+
+      // Сохраняем файл
+      final directory = await getTemporaryDirectory();
+      final file = File('${directory.path}/$fileName');
+      await file.writeAsBytes(docBytes);
+
+      // Закрываем индикатор
+      if (!mounted) return;
+      Navigator.of(context).pop();
+
+      // Делимся файлом через системный шеринг
+      final files = [XFile(file.path)];
+      await Share.shareXFiles(
+        files,
+        text: 'Отчет по проверке чертежа: ${_selectedDrawingData!['name']}',
+        subject: 'Отчет по чертежу',
+      );
+
+    } catch (e) {
+      if (!mounted) return;
+      Navigator.of(context).pop();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Ошибка отправки: $e')),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -291,13 +351,30 @@ class _HistoryScreenState extends State<HistoryScreen> {
           ),
         ),
 
-        // Кнопка скачивания отчета ПЕРЕМЕЩЕНА ВНИЗ
+        // Кнопки скачивания и отправки (рядом)
         const SizedBox(height: 20),
-        PrimaryButton(
-          icon: Icons.file_download,
-          label: 'Скачать отчет',
-          radius: 12,
-          onPressed: _downloadReport,
+        Row(
+          children: [
+            // Существующая кнопка скачивания
+            Expanded(
+              child: PrimaryButton(
+                icon: Icons.file_download,
+                label: 'Скачать отчет',
+                radius: 12,
+                onPressed: _downloadReport,
+              ),
+            ),
+            const SizedBox(width: 10),
+            // НОВАЯ кнопка отправки
+            Expanded(
+              child: PrimaryButton(
+                icon: Icons.share,
+                label: 'Поделиться',
+                radius: 12,
+                onPressed: _shareReportViaMessenger,
+              ),
+            ),
+          ],
         ),
         const SizedBox(height: 30),
       ],
@@ -325,6 +402,9 @@ class _HistoryScreenState extends State<HistoryScreen> {
     final Uint8List imageBytes = base64.decode(_selectedDrawingData!['image_base64']!);
     final screenWidth = MediaQuery.of(context).size.width;
 
+    // Получаем текст результатов проверки
+    final checkResult = _selectedDrawingData!['check_result'] ?? '';
+
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -350,30 +430,45 @@ class _HistoryScreenState extends State<HistoryScreen> {
             borderRadius: BorderRadius.circular(16),
           ),
           child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Row(
-              children: [
-                CircleAvatar(
-                  radius: 15,
-                  backgroundColor: AppColors.primary,
-                  child: Text(
-                    '1',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 20),
-                Expanded(
-                  child: Text(
-                    _selectedDrawingData!['check_result'] ?? 'Описание ошибки',
-                    style: Theme.of(context).textTheme.bodyLarge,
-                  ),
-                ),
-              ],
-            ),
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (checkResult.isNotEmpty) ...checkResult
+                        .split('\n\n') // разделяем текст по переносам строк
+                        .asMap()    // получаем индекс каждой строки
+                        .entries
+                        .map(
+                          (entry) => Padding(
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: Row(
+                          children: [
+                            CircleAvatar(
+                              radius: 15,
+                              backgroundColor: AppColors.primary,
+                              child: Text(
+                                (entry.key + 1).toString(), // порядковый номер
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 20),
+                            Expanded(
+                              child: Text(
+                                entry.value,
+                                style: Theme.of(context).textTheme.bodyLarge,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    )
+                        .toList(),
+                  ]
+              )
           ),
         ),
       ],

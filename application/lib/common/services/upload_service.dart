@@ -1,18 +1,14 @@
-import 'dart:convert';
 import 'dart:typed_data';
 import 'dart:io';
-import 'package:http/http.dart' as http;
 import 'drawing_service.dart';
 
 class UploadResult {
   final String text;
-  final int number;
   final Uint8List image;
   final int drawingId;
 
   UploadResult({
     required this.text,
-    required this.number,
     required this.image,
     required this.drawingId,
   });
@@ -52,7 +48,6 @@ class UploadService {
 
       return UploadResult(
         text: yoloResult['text'] as String,
-        number: yoloResult['number'] as int,
         image: yoloResult['processed_image'] as Uint8List,
         drawingId: drawingId,
       );

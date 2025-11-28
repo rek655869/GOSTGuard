@@ -44,7 +44,7 @@ class ImageSelectCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(12),
                   child: Image.file(
                     image!,
-                    height: 320,
+                    height: screenHeight * 0.35,
                     fit: BoxFit.cover,
                   ),
                 ),

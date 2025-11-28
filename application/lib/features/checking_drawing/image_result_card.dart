@@ -4,13 +4,11 @@ import '../../app/theme/app_colors.dart';
 
 class ImageResultCard extends StatelessWidget {
   final Uint8List responseImage;
-  final int number;
   final String text;
 
   const ImageResultCard({
     super.key,
     required this.responseImage,
-    required this.number,
     required this.text,
   });
 
@@ -70,29 +68,44 @@ class ImageResultCard extends StatelessWidget {
           ),
           child: Padding(
             padding: const EdgeInsets.all(24),
-            child: Row(
-              children: [
-                CircleAvatar(
-                  radius: 15,
-                  backgroundColor: AppColors.primary,
-                  child: Text(
-                    number.toString(),
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  ...text
+                      .split('\n\n') // разделяем текст по переносам строк
+                      .asMap()    // получаем индекс каждой строки
+                      .entries
+                      .map(
+                        (entry) => Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: Row(
+                        children: [
+                          CircleAvatar(
+                            radius: 15,
+                            backgroundColor: AppColors.primary,
+                            child: Text(
+                              (entry.key + 1).toString(), // порядковый номер
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 20),
+                          Expanded(
+                            child: Text(
+                              entry.value,
+                              style: Theme.of(context).textTheme.bodyLarge,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                ),
-                const SizedBox(width: 20),
-                Expanded(
-                  child: Text(
-                    text,
-                    style: Theme.of(context).textTheme.bodyLarge,
-                  ),
-                ),
-              ],
-            ),
+                  )
+                      .toList(),
+                ]
+            )
           ),
         ),
       ],

@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:gostguard/features/checking_drawing/image_select_card.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -10,6 +9,8 @@ import '../../common/widgets/alert.dart';
 import '../../common/widgets/base_screen.dart';
 import '../../common/widgets/primary_button.dart';
 import 'image_result_card.dart';
+import 'image_select_card.dart';
+
 
 /// Экран загрузки изображения на сервер
 class CheckingScreen extends StatefulWidget {
@@ -23,7 +24,6 @@ class _CheckingScreenState extends State<CheckingScreen> {
   File? _image;
   Uint8List? _responseImage;
   String? _responseText;
-  int? _responseNumber;
   bool _isUploading = false;
 
   final _uploader = UploadService();
@@ -43,7 +43,6 @@ class _CheckingScreenState extends State<CheckingScreen> {
 
       setState(() {
         _responseText = result.text;
-        _responseNumber = result.number;
         _responseImage = result.image;
         _isUploading = false;
       });
@@ -139,7 +138,6 @@ class _CheckingScreenState extends State<CheckingScreen> {
                             setState(() {
                               _responseImage = null;
                               _responseText = null;
-                              _responseNumber = null;
                             });
                           },
                         ),
@@ -172,7 +170,6 @@ class _CheckingScreenState extends State<CheckingScreen> {
 
                     ImageResultCard(
                       responseImage: _responseImage!,
-                      number: _responseNumber!,
                       text: _responseText!,
                     ),
                   ],
