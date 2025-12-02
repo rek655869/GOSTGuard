@@ -2,14 +2,15 @@ from flask import Flask, request, jsonify
 import io
 import uuid
 from flask_cors import CORS
-from process_image import process_image, get_image_from_request, create_final_image_with_all_annotations
+from process_image import get_image_from_request, create_final_image_with_all_annotations
 from process_arrow_heads import process_arrow_heads
 from process_arrow_distances import process_arrow_distances
 from process_text import process_text
+from process_borders import process_borders
 import base64
 from ultralytics import YOLO
 
-from server.generate_report import generate_word_report
+from generate_report import generate_word_report
 
 app = Flask(__name__)
 CORS(app)
@@ -33,7 +34,7 @@ def upload_image():
         original_image, image_np, file_stream = get_image_from_request(file)
 
         # 1. ПРОВЕРКА РАМКИ
-        processed_image, frame_text = process_image(original_image, model2)
+        processed_image, frame_text = process_borders(original_image)
 
         # 2. ПРОВЕРКА НАКОНЕЧНИКОВ СТРЕЛОК
         arrow_heads_violations, arrow_heads_stats, arrow_heads_text, _ = process_arrow_heads(image_np, model)
